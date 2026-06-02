@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Click Emojis Fofinho - Com Loja</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  overflow: hidden;
+  height: 100vh;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="%23ff6f61" opacity="0.7"/></svg>'), auto;
+}
+
+/* Painéis de status */
+#scoreboard, #money { 
+  position: fixed; 
+  top: 10px; 
+  font-size: 24px; 
+  background-color: rgba(255, 255, 255, 0.9); 
+  padding: 10px 15px; 
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  z-index: 100;
+  border: 3px solid;
+}
+
+#scoreboard { 
+  left: 10px; 
+  color: #ff6f61;
+  border-color: #ff6f61;
+}
+
+#money { 
+  right: 10px; 
+  color: #4CAF50;
+  border-color: #4CAF50;
+}
+
+/* Botões principais */
+#gameControls {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  gap: 10px;
+  z-index: 100;
+}
+
+.controlBtn {
+  background-color: #ff6f61;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 18px;
+  border-radius: 25px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: transform 0.2s, background-color 0.2s;
+  font-family: inherit;
+}
+
+.controlBtn:hover {
+  background-color: #ff5252;
+  transform: scale(1.05);
+}
+
+.controlBtn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Coleção */
+#collection { 
+  position: fixed; 
+  bottom: 70px; 
+  left: 10px; 
+  background-color: rgba(255, 204, 128, 0.95); 
+  padding: 15px; 
+  border-radius: 15px; 
+  max-height: 200px; 
+  overflow-y: auto; 
+  width: 300px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border: 3px solid #ff9966;
+  z-index: 100;
+}
+
+#collection strong {
+  color: #ff6f61;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+
+#collectedEmojis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.collectedEmoji {
+  font-size: 24px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.collectedEmoji .emojiCount {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ff6f61;
+  color: white;
+  font-size: 12px;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Emojis na tela */
+.emojiBox { 
+  position: absolute; 
+  width: 70px; 
+  height: 70px; 
+  background-color: rgba(255, 204, 128, 0.95); 
+  border: 3px solid #ff6f61; 
+  border-radius: 15px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  cursor: pointer; 
+  font-size: 40px; 
+  transition: transform 0.2s; 
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  z-index: 10;
+  user-select: none;
+}
+
+.emojiBox:hover { 
+  transform: scale(1.2); 
+  z-index: 20;
+}
+
+/* Overlay de upgrade */
+#upgradeOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+/* Overlay da loja */
+#shopOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+#shopContent {
+  background-color: white;
+  border-radius: 20px;
+  padding: 30px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+#shopContent h2 {
+  color: #ff6f61;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 28px;
+}
+
+.shopCategory {
+  margin-bottom: 25px;
+}
+
+.shopCategory h3 {
+  color: #4CAF50;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #ffcc80;
+  padding-bottom: 5px;
+}
+
+.shopItems {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.shopItem {
+  background-color: #fff8e1;
+  border-radius: 15px;
+  padding: 15px;
+  text-align: center;
+  border: 2px solid #ffcc80;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.shopItem:hover {
+  transform: translateY(-5px);
+  border-color: #ff6f61;
+}
+
+.shopItem .emoji {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.shopItem .price {
+  color: #4CAF50;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.shopItem .name {
+  font-size: 14px;
+  color: #666;
+  margin-top: 5px;
+}
+
+.shopItem.purchased {
+  background-color: #e8f5e9;
+  border-color: #4CAF50;
+}
+
+.shopItem.purchased .price {
+  color: #666;
+  text-decoration: line-through;
+}
+
+.shopItem.purchased::after {
+  content: "✓ COMPRADO";
+  display: block;
+  color: #4CAF50;
+  font-size: 12px;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+/* Caixa de upgrade */
+#upgradeBox {
+  width: 150px;
+  height: 150px;
+  background-color: #ffcc80;
+  border: 5px solid #ff6f61;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 70px;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  margin-bottom: 20px;
+}
+
+#closeUpgradeBtn, #closeShopBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: #ff6f61;
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#upgradeInfo {
+  color: white;
+  text-align: center;
+  font-size: 18px;
+  margin-top: 20px;
+  max-width: 400px;
+}
+
+.shake {
+  animation: shake 0.5s infinite;
+}
+
+@keyframes shake {
+  0% { transform: translate(0,0) rotate(0deg); }
+  25% { transform: translate(5px,0) rotate(5deg); }
+  50% { transform: translate(-5px,0) rotate(-5deg); }
+  75% { transform: translate(3px,0) rotate(3deg); }
+  100% { transform: translate(0,0) rotate(0deg); }
+}
+
+/* Animação para emoji voador */
+@keyframes flyToCollection {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.1) translate(var(--target-x), var(--target-y));
+    opacity: 0;
+  }
+}
+
+.flyingEmoji {
+  position: fixed;
+  font-size: 40px;
+  z-index: 10000;
+  pointer-events: none;
+  animation: flyToCollection 1s forwards;
+}
+
+/* Notificações */
+.notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #4CAF50;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  z-index: 10000;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    top: -100px;
+    opacity: 0;
+  }
+  to {
+    top: 20px;
+    opacity: 1;
+  }
+}
+
+/* Barra de progresso */
+.progressBar {
+  width: 100%;
+  height: 20px;
+  background-color: #ddd;
+  border-radius: 10px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: #4CAF50;
+  border-radius: 10px;
+  transition: width 0.3s;
+}
+</style>
+</head>
+<body>
+
+<div id="gameScreen">
+  <div id="scoreboard">Clique: 0</div>
+  <div id="money">Dinheiro: $1000</div>
+  
+  <div id="gameControls">
+    <button class="controlBtn" id="openShopBtn">🛒 Loja</button>
+    <button class="controlBtn" id="openUpgradeBtn">🎁 Caixa Surpresa - $500</button>
+  </div>
+  
+  <div id="collection">
+    <strong>Coleção de Emojis: <span id="collectionCount">0</span></strong>
+    <div id="collectedEmojis"></div>
+  </div>
+</div>
+
+<!-- Overlay de upgrade -->
+<div id="upgradeOverlay">
+  <button id="closeUpgradeBtn" onclick="closeUpgradeBox()">×</button>
+  <div id="upgradeBox" onclick="openCrate()">
+    📦
+  </div>
+  <div id="upgradeInfo">
+    <p>Clique na caixa para abrir e ganhar um emoji especial!</p>
+    <p>Valor sorteado: $1.000 ~ $10.000</p>
+  </div>
+</div>
+
+<!-- Overlay da loja -->
+<div id="shopOverlay">
+  <button id="closeShopBtn" onclick="closeShop()">×</button>
+  <div id="shopContent">
+    <h2>🛒 Loja de Emojis</h2>
+    
+    <div class="shopCategory">
+      <h3>💰 Emojis Básicos (Baratos)</h3>
+      <div class="shopItems" id="basicEmojis">
+        <!-- Emojis básicos serão gerados aqui -->
+      </div>
+    </div>
+    
+    <div class="shopCategory">
+      <h3>🏆 Emojis Raros (Caros)</h3>
+      <div class="shopItems" id="rareEmojis">
+        <!-- Emojis raros serão gerados aqui -->
+      </div>
+    </div>
+    
+    <div class="shopCategory">
+      <h3>💎 Emojis Épicos (Muito Caros)</h3>
+      <div class="shopItems" id="epicEmojis">
+        <!-- Emojis épicos serão gerados aqui -->
+      </div>
+    </div>
+    
+    <div class="shopCategory">
+      <h3>👑 Emojis Lendários (Super Caros)</h3>
+      <div class="shopItems" id="legendaryEmojis">
+        <!-- Emojis lendários serão gerados aqui -->
+      </div>
+    </div>
+    
+    <div class="progressBar">
+      <div class="progressFill" id="shopProgress" style="width: 0%"></div>
+    </div>
+    <div style="text-align: center; color: #666; margin-top: 10px;">
+      Coleção: <span id="ownedCount">0</span> / <span id="totalEmojis">0</span> emojis
+    </div>
+  </div>
+</div>
+
+<script>
+// VARIÁVEIS DO JOGO
+let score = 0;
+let money = 1000;
+const UPGRADE_COST = 500;
+let maxEmojisOnScreen = 5;
+let isUpgradeBoxOpen = false;
+let ownedEmojis = new Map(); // Mapa: emoji -> quantidade
+let allShopEmojis = [];
+
+// EMOJIS POR CATEGORIA (MUITO MAIS EMOJIS!)
+const emojiCategories = {
+  basic: [
+    { emoji: "😀", name: "Sorriso", price: 50 },
+    { emoji: "😂", name: "Risada", price: 75 },
+    { emoji: "🥰", name: "Carinha de amor", price: 100 },
+    { emoji: "😎", name: "Cool", price: 125 },
+    { emoji: "🤔", name: "Pensativo", price: 150 },
+    { emoji: "🥺", name: "Suplicante", price: 175 },
+    { emoji: "🤯", name: "Explodindo", price: 200 },
+    { emoji: "🤩", name: "Estrelado", price: 225 },
+    { emoji: "🥳", name: "Festa", price: 250 },
+    { emoji: "😴", name: "Dormindo", price: 275 },
+    { emoji: "🤢", name: "Náusea", price: 300 },
+    { emoji: "🤠", name: "Cowboy", price: 325 },
+    { emoji: "🥶", name: "Frio", price: 350 },
+    { emoji: "🤡", name: "Palhaço", price: 375 },
+    { emoji: "👻", name: "Fantasminha", price: 400 }
+  ],
+  
+  rare: [
+    { emoji: "🐶", name: "Cachorro", price: 500 },
+    { emoji: "🐱", name: "Gato", price: 600 },
+    { emoji: "🐭", name: "Rato", price: 700 },
+    { emoji: "🐹", name: "Hamster", price: 800 },
+    { emoji: "🐰", name: "Coelho", price: 900 },
+    { emoji: "🦊", name: "Raposa", price: 1000 },
+    { emoji: "🐻", name: "Urso", price: 1100 },
+    { emoji: "🐼", name: "Panda", price: 1200 },
+    { emoji: "🐨", name: "Coala", price: 1300 },
+    { emoji: "🐯", name: "Tigre", price: 1400 },
+    { emoji: "🦁", name: "Leão", price: 1500 },
+    { emoji: "🐮", name: "Vaca", price: 1600 },
+    { emoji: "🐷", name: "Porco", price: 1700 },
+    { emoji: "🐸", name: "Sapo", price: 1800 },
+    { emoji: "🐵", name: "Macaco", price: 1900 }
+  ],
+  
+  epic: [
+    { emoji: "🦄", name: "Unicórnio", price: 2000 },
+    { emoji: "🐲", name: "Dragão", price: 2500 },
+    { emoji: "🐙", name: "Polvo", price: 3000 },
+    { emoji: "🦑", name: "Lula", price: 3500 },
+    { emoji: "🦐", name: "Camarão", price: 4000 },
+    { emoji: "🦀", name: "Caranguejo", price: 4500 },
+    { emoji: "🐡", name: "Baiacu", price: 5000 },
+    { emoji: "🐬", name: "Golfinho", price: 5500 },
+    { emoji: "🦈", name: "Tubarão", price: 6000 },
+    { emoji: "🐋", name: "Baleia", price: 6500 },
+    { emoji: "🦒", name: "Girafa", price: 7000 },
+    { emoji: "🐘", name: "Elefante", price: 7500 },
+    { emoji: "🦏", name: "Rinoceronte", price: 8000 },
+    { emoji: "🦛", name: "Hipopótamo", price: 8500 },
+    { emoji: "🐪", name: "Camelo", price: 9000 }
+  ],
+  
+  legendary: [
+    { emoji: "🦅", name: "Águia", price: 10000 },
+    { emoji: "🦉", name: "Coruja", price: 15000 },
+    { emoji: "🦚", name: "Pavão", price: 20000 },
+    { emoji: "🦢", name: "Cisne", price: 25000 },
+    { emoji: "🦩", name: "Flamingo", price: 30000 },
+    { emoji: "🐿️", name: "Esquilo", price: 35000 },
+    { emoji: "🦔", name: "Ouriço", price: 40000 },
+    { emoji: "🦇", name: "Morcego", price: 45000 },
+    { emoji: "🐉", name: "Serpente", price: 50000 },
+    { emoji: "🦕", name: "Dinossauro", price: 75000 },
+    { emoji: "🦖", name: "T-Rex", price: 100000 },
+    { emoji: "🦜", name: "Papagaio", price: 150000 },
+    { emoji: "🦤", name: "Dodô", price: 200000 },
+    { emoji: "🦭", name: "Foca", price: 250000 },
+    { emoji: "🦫", name: "Castor", price: 300000 }
+  ]
+};
+
+// Emojis que podem aparecer no jogo (iniciais + comprados)
+let availableEmojis = ["🍎", "🍌", "🍇", "🍉", "🥑", "🥕", "🥦", "🍕", "🍔", "🍟"];
+
+// ATUALIZAR BOTÃO DE UPGRADE
+function updateUpgradeButton() {
+  const btn = document.getElementById('openUpgradeBtn');
+  if (money < UPGRADE_COST) {
+    btn.disabled = true;
+    btn.textContent = `🎁 $${UPGRADE_COST} (Falta: $${UPGRADE_COST - money})`;
+  } else {
+    btn.disabled = false;
+    btn.textContent = `🎁 Caixa Surpresa - $${UPGRADE_COST}`;
+  }
+}
+
+// MOSTRAR NOTIFICAÇÃO
+function showNotification(message, color = '#4CAF50') {
+  const notification = document.createElement('div');
+  notification.className = 'notification';
+  notification.textContent = message;
+  notification.style.backgroundColor = color;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transition = 'opacity 0.5s';
+    setTimeout(() => notification.remove(), 500);
+  }, 3000);
+}
+
+// POSIÇÃO ALEATÓRIA
+function randomPosition(size = 70) {
+  const margin = 100;
+  const x = Math.random() * (window.innerWidth - size - margin * 2) + margin;
+  const y = Math.random() * (window.innerHeight - size - margin * 2) + margin;
+  return { x, y };
+}
+
+// INICIAR JOGO
+function startGame() {
+  spawnEmojis();
+  setInterval(spawnEmojis, 2000);
+  updateUpgradeButton();
+  initializeShop();
+}
+
+// GERAR EMOJIS NA TELA
+function spawnEmojis() {
+  const current = document.querySelectorAll('.emojiBox:not(.collected)').length;
+  if (current >= maxEmojisOnScreen) return;
+  
+  const emoji = availableEmojis[Math.floor(Math.random() * availableEmojis.length)];
+  const box = document.createElement('div');
+  box.className = 'emojiBox';
+  box.textContent = emoji;
+  
+  const pos = randomPosition();
+  box.style.left = pos.x + 'px';
+  box.style.top = pos.y + 'px';
+  
+  box.onclick = () => {
+    score++;
+    const moneyValue = Math.floor(Math.random() * 100 + 1);
+    money += moneyValue;
+    
+    document.getElementById('scoreboard').textContent = 'Clique: ' + score;
+    updateMoney();
+    
+    // Animação de clique
+    box.style.transform = 'scale(1.3) rotate(20deg)';
+    box.style.opacity = '0.7';
+    
+    showNotification(`+$${moneyValue} 💰`, '#4CAF50');
+    
+    setTimeout(() => {
+      box.remove();
+    }, 200);
+  };
+  
+  document.getElementById('gameScreen').appendChild(box);
+}
+
+// ATUALIZAR DINHEIRO NA TELA
+function updateMoney() {
+  document.getElementById('money').textContent = `Dinheiro: $${money}`;
+  updateUpgradeButton();
+  updateShopButtons();
+}
+
+// ADICIONAR À COLEÇÃO
+function addToCollection(emoji, quantity = 1) {
+  if (!ownedEmojis.has(emoji)) {
+    ownedEmojis.set(emoji, 0);
+  }
+  ownedEmojis.set(emoji, ownedEmojis.get(emoji) + quantity);
+  
+  // Adiciona aos emojis disponíveis para spawn
+  if (!availableEmojis.includes(emoji)) {
+    availableEmojis.push(emoji);
+  }
+  
+  updateCollectionDisplay();
+}
+
+// ATUALIZAR DISPLAY DA COLEÇÃO
+function updateCollectionDisplay() {
+  const collectionDiv = document.getElementById('collectedEmojis');
+  collectionDiv.innerHTML = '';
+  
+  let total = 0;
+  ownedEmojis.forEach((quantity, emoji) => {
+    const colEmoji = document.createElement('div');
+    colEmoji.className = 'collectedEmoji';
+    colEmoji.textContent = emoji;
+    colEmoji.title = `Quantidade: ${quantity}`;
+    
+    const countSpan = document.createElement('span');
+    countSpan.className = 'emojiCount';
+    countSpan.textContent = quantity > 9 ? '9+' : quantity;
+    colEmoji.appendChild(countSpan);
+    
+    collectionDiv.appendChild(colEmoji);
+    total += quantity;
+  });
+  
+  document.getElementById('collectionCount').textContent = ownedEmojis.size;
+  updateShopProgress();
+}
+
+// INICIALIZAR LOJA
+function initializeShop() {
+  // Juntar todos os emojis da loja
+  allShopEmojis = [];
+  for (const category in emojiCategories) {
+    allShopEmojis.push(...emojiCategories[category]);
+  }
+  
+  // Gerar a loja
+  generateShopCategory('basicEmojis', emojiCategories.basic);
+  generateShopCategory('rareEmojis', emojiCategories.rare);
+  generateShopCategory('epicEmojis', emojiCategories.epic);
+  generateShopCategory('legendaryEmojis', emojiCategories.legendary);
+  
+  updateShopProgress();
+  
+  // Adicionar emojis iniciais à coleção
+  availableEmojis.forEach(emoji => addToCollection(emoji, 1));
+}
+
+// GERAR CATEGORIA DA LOJA
+function generateShopCategory(elementId, items) {
+  const container = document.getElementById(elementId);
+  container.innerHTML = '';
+  
+  items.forEach(item => {
+    const shopItem = document.createElement('div');
+    shopItem.className = 'shopItem';
+    shopItem.dataset.emoji = item.emoji;
+    shopItem.dataset.price = item.price;
+    
+    const isOwned = ownedEmojis.has(item.emoji);
+    if (isOwned) {
+      shopItem.classList.add('purchased');
+    }
+    
+    shopItem.innerHTML = `
+      <div class="emoji">${item.emoji}</div>
+      <div class="price">$${item.price}</div>
+      <div class="name">${item.name}</div>
+    `;
+    
+    shopItem.onclick = () => buyEmoji(item);
+    
+    container.appendChild(shopItem);
+  });
+}
+
+// COMPRAR EMOJI
+function buyEmoji(item) {
+  if (ownedEmojis.has(item.emoji)) {
+    showNotification(`Você já tem ${item.emoji} ${item.name}!`, '#FF9800');
+    return;
+  }
+  
+  if (money < item.price) {
+    showNotification(`Dinheiro insuficiente! Faltam $${item.price - money}`, '#f44336');
+    return;
+  }
+  
+  // Debita o dinheiro
+  money -= item.price;
+  updateMoney();
+  
+  // Adiciona à coleção
+  addToCollection(item.emoji);
+  
+  // Atualiza item na loja
+  const shopItem = document.querySelector(`.shopItem[data-emoji="${item.emoji}"]`);
+  if (shopItem) {
+    shopItem.classList.add('purchased');
+  }
+  
+  showNotification(`✅ Comprou ${item.emoji} ${item.name} por $${item.price}!`, '#4CAF50');
+}
+
+// ATUALIZAR PROGRESSO DA LOJA
+function updateShopProgress() {
+  const total = allShopEmojis.length;
+  const owned = ownedEmojis.size;
+  const progress = (owned / total) * 100;
+  
+  document.getElementById('shopProgress').style.width = `${progress}%`;
+  document.getElementById('ownedCount').textContent = owned;
+  document.getElementById('totalEmojis').textContent = total;
+}
+
+// ATUALIZAR BOTÕES DA LOJA
+function updateShopButtons() {
+  document.querySelectorAll('.shopItem').forEach(item => {
+    const price = parseInt(item.dataset.price);
+    const emoji = item.dataset.emoji;
+    
+    if (ownedEmojis.has(emoji)) {
+      item.classList.add('purchased');
+    } else if (money < price) {
+      item.style.opacity = '0.7';
+      item.style.cursor = 'not-allowed';
+    } else {
+      item.style.opacity = '1';
+      item.style.cursor = 'pointer';
+    }
+  });
+}
+
+// ABRIR CAIXA DE UPGRADE
+function openUpgradeBox() {
+  if (money < UPGRADE_COST) {
+    showNotification(`Você precisa de $${UPGRADE_COST} para comprar uma caixa!`, '#f44336');
+    return;
+  }
+  
+  // Debita o dinheiro
+  money -= UPGRADE_COST;
+  updateMoney();
+  
+  // Mostra o overlay
+  document.getElementById('upgradeOverlay').style.display = 'flex';
+  isUpgradeBoxOpen = true;
+  
+  // Anima a caixa
+  const upgradeBox = document.getElementById('upgradeBox');
+  upgradeBox.textContent = '📦';
+  upgradeBox.classList.add('shake');
+}
+
+// FECHAR CAIXA DE UPGRADE
+function closeUpgradeBox() {
+  document.getElementById('upgradeOverlay').style.display = 'none';
+  isUpgradeBoxOpen = false;
+  const upgradeBox = document.getElementById('upgradeBox');
+  upgradeBox.classList.remove('shake');
+}
+
+// ABRIR CAIXA SURPRESA
+function openCrate() {
+  if (!isUpgradeBoxOpen) return;
+  
+  const upgradeBox = document.getElementById('upgradeBox');
+  upgradeBox.classList.remove('shake');
+  upgradeBox.style.cursor = 'default';
+  
+  // Escolhe um emoji aleatório (pode ser de qualquer categoria)
+  const allEmojis = [...emojiCategories.basic, ...emojiCategories.rare, 
+                    ...emojiCategories.epic, ...emojiCategories.legendary];
+  const randomItem = allEmojis[Math.floor(Math.random() * allEmojis.length)];
+  
+  // Mostra o emoji
+  upgradeBox.textContent = randomItem.emoji;
+  
+  // Anima o emoji voando
+  const flyingEmoji = document.createElement('div');
+  flyingEmoji.textContent = randomItem.emoji;
+  flyingEmoji.className = 'flyingEmoji';
+  
+  const overlay = document.getElementById('upgradeOverlay');
+  const rect = overlay.getBoundingClientRect();
+  flyingEmoji.style.left = (rect.left + rect.width / 2 - 20) + 'px';
+  flyingEmoji.style.top = (rect.top + rect.height / 2 - 20) + 'px';
+  
+  const collection = document.getElementById('collection').getBoundingClientRect();
+  const targetX = collection.left + collection.width / 2 - (rect.left + rect.width / 2);
+  const targetY = collection.top + collection.height / 2 - (rect.top + rect.height / 2);
+  
+  flyingEmoji.style.setProperty('--target-x', targetX + 'px');
+  flyingEmoji.style.setProperty('--target-y', targetY + 'px');
+  
+  document.body.appendChild(flyingEmoji);
+  
+  // Adiciona à coleção
+  setTimeout(() => {
+    const moneyValue = Math.floor(Math.random() * 9000 + 1000); // $1.000 ~ $10.000
+    addToCollection(randomItem.emoji);
+    money += moneyValue;
+    updateMoney();
+    
+    flyingEmoji.remove();
+    closeUpgradeBox();
+    
+    showNotification(`🎉 Você ganhou ${randomItem.emoji} ${randomItem.name} e $${moneyValue}!`, '#FF9800');
+  }, 1000);
+}
+
+// ABRIR LOJA
+function openShop() {
+  document.getElementById('shopOverlay').style.display = 'flex';
+  updateShopButtons();
+}
+
+// FECHAR LOJA
+function closeShop() {
+  document.getElementById('shopOverlay').style.display = 'none';
+}
+
+// CONFIGURAR EVENTOS
+document.getElementById('openShopBtn').onclick = openShop;
+document.getElementById('openUpgradeBtn').onclick = openUpgradeBox;
+
+// Fechar overlay ao clicar fora
+document.getElementById('upgradeOverlay').onclick = function(event) {
+  if (event.target.id === 'upgradeOverlay') {
+    closeUpgradeBox();
+  }
+};
+
+document.getElementById('shopOverlay').onclick = function(event) {
+  if (event.target.id === 'shopOverlay') {
+    closeShop();
+  }
+};
+
+// INICIAR O JOGO
+window.onload = function() {
+  startGame();
+};
+
+// AJUSTAR TELA AO REDIMENSIONAR
+window.onresize = function() {
+  document.querySelectorAll('.emojiBox').forEach(box => {
+    if (!box.classList.contains('collected')) {
+      const pos = randomPosition();
+      box.style.left = pos.x + 'px';
+      box.style.top = pos.y + 'px';
+    }
+  });
+};
+</script>
+
+</body>
+</html>
