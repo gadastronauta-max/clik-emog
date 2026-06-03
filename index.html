@@ -1,1059 +1,908 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gewkrooms - A Realidade Artificial</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            -webkit-touch-callout: none;
-        }
+<meta charset="UTF-8">
+<title>Click Emojis Fofinho - Com Loja</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #000;
-            font-family: 'Arial', sans-serif;
-        }
+body {
+  font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  overflow: hidden;
+  height: 100vh;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="%23ff6f61" opacity="0.7"/></svg>'), auto;
+}
 
-        /* --- MENU --- */
-        #menu {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-color: #000;
-            z-index: 10;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 50px;
-            overflow-y: auto;
-        }
+/* Painéis de status */
+#scoreboard, #money { 
+  position: fixed; 
+  top: 10px; 
+  font-size: 24px; 
+  background-color: rgba(255, 255, 255, 0.9); 
+  padding: 10px 15px; 
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  z-index: 100;
+  border: 3px solid;
+}
 
-        #menu-esquerda {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 80%;
-        }
+#scoreboard { 
+  left: 10px; 
+  color: #ff6f61;
+  border-color: #ff6f61;
+}
 
-        #titulo {
-            color: #fff;
-            font-size: clamp(3rem, 8vw, 6rem);
-            font-weight: bold;
-            margin: 0;
-            text-shadow: 0 0 20px #00ff00;
-        }
+#money { 
+  right: 10px; 
+  color: #4CAF50;
+  border-color: #4CAF50;
+}
 
-        #btn-jogar {
-            background: none;
-            border: 3px solid #fff;
-            color: #fff;
-            font-size: 2.5rem;
-            padding: 15px 50px;
-            cursor: pointer;
-            width: fit-content;
-            transition: 0.3s;
-        }
+/* Botões principais */
+#gameControls {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  gap: 10px;
+  z-index: 100;
+}
 
-        #btn-jogar:hover {
-            background-color: #fff;
-            color: #000;
-            box-shadow: 0 0 30px rgba(255,255,255,0.5);
-        }
+.controlBtn {
+  background-color: #ff6f61;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 18px;
+  border-radius: 25px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: transform 0.2s, background-color 0.2s;
+  font-family: inherit;
+}
 
-        #btn-comentarios {
-            background: none;
-            border: 3px solid #00ff00;
-            color: #00ff00;
-            font-size: 1.8rem;
-            padding: 12px 40px;
-            cursor: pointer;
-            width: fit-content;
-            transition: 0.3s;
-            display: none;
-            margin-top: 20px;
-        }
+.controlBtn:hover {
+  background-color: #ff5252;
+  transform: scale(1.05);
+}
 
-        #btn-comentarios:hover {
-            background-color: #00ff00;
-            color: #000;
-            box-shadow: 0 0 20px #00ff00;
-        }
+.controlBtn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  transform: none;
+}
 
-        #menu-direita {
-            width: 40%;
-            max-width: 500px;
-            height: 70%;
-            color: #ff8888;
-            font-size: clamp(1rem, 1.8vw, 1.4rem);
-            line-height: 1.6;
-            text-align: justify;
-            overflow-y: auto;
-            padding-right: 10px;
-            user-select: text;
-            -webkit-user-select: text;
-            -webkit-touch-callout: default;
-            pointer-events: auto;
-            scroll-behavior: smooth;
-            background: rgba(0,0,0,0.7);
-            border-radius: 15px;
-            padding: 20px;
-            border-left: 3px solid #00ff00;
-        }
+/* Coleção */
+#collection { 
+  position: fixed; 
+  bottom: 70px; 
+  left: 10px; 
+  background-color: rgba(255, 204, 128, 0.95); 
+  padding: 15px; 
+  border-radius: 15px; 
+  max-height: 200px; 
+  overflow-y: auto; 
+  width: 300px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border: 3px solid #ff9966;
+  z-index: 100;
+}
 
-        #menu-direita::-webkit-scrollbar {
-            width: 8px;
-        }
-        #menu-direita::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-        #menu-direita::-webkit-scrollbar-thumb {
-            background: #ff3333;
-            border-radius: 10px;
-        }
+#collection strong {
+  color: #ff6f61;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 18px;
+}
 
-        /* --- SISTEMA DE COMENTÁRIOS GLOBAIS --- */
-        #secao-comentarios {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            background: rgba(0, 0, 0, 0.95);
-            border: 2px solid #00ff00;
-            border-radius: 15px;
-            padding: 25px;
-            z-index: 30;
-            display: none;
-            flex-direction: column;
-            gap: 15px;
-            color: #fff;
-            box-shadow: 0 0 50px rgba(0,255,0,0.3);
-        }
+#collectedEmojis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
 
-        #secao-comentarios.ativo {
-            display: flex;
-        }
+.collectedEmoji {
+  font-size: 24px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: relative;
+}
 
-        #fechar-comentarios {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            background: none;
-            border: none;
-            color: #ff3333;
-            font-size: 2rem;
-            cursor: pointer;
-            padding: 5px 10px;
-        }
+.collectedEmoji .emojiCount {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ff6f61;
+  color: white;
+  font-size: 12px;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-        #fechar-comentarios:hover {
-            color: #ff6666;
-        }
+/* Emojis na tela */
+.emojiBox { 
+  position: absolute; 
+  width: 70px; 
+  height: 70px; 
+  background-color: rgba(255, 204, 128, 0.95); 
+  border: 3px solid #ff6f61; 
+  border-radius: 15px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  cursor: pointer; 
+  font-size: 40px; 
+  transition: transform 0.2s; 
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  z-index: 10;
+  user-select: none;
+}
 
-        #titulo-comentarios {
-            font-size: 1.8rem;
-            color: #00ff00;
-            margin: 0;
-            text-align: center;
-        }
+.emojiBox:hover { 
+  transform: scale(1.2); 
+  z-index: 20;
+}
 
-        #lista-comentarios {
-            flex: 1;
-            overflow-y: auto;
-            min-height: 200px;
-            max-height: 400px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            user-select: text;
-            -webkit-user-select: text;
-        }
+/* Overlay de upgrade */
+#upgradeOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
 
-        .comentario-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            position: relative;
-            word-wrap: break-word;
-        }
+/* Overlay da loja */
+#shopOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
 
-        .comentario-autor {
-            color: #00ff00;
-            font-weight: bold;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
+#shopContent {
+  background-color: white;
+  border-radius: 20px;
+  padding: 30px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
 
-        .comentario-texto {
-            color: #fff;
-            font-size: 1rem;
-            line-height: 1.4;
-        }
+#shopContent h2 {
+  color: #ff6f61;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 28px;
+}
 
-        .comentario-data {
-            color: #888;
-            font-size: 0.8rem;
-            margin-top: 5px;
-        }
+.shopCategory {
+  margin-bottom: 25px;
+}
 
-        .btn-apagar {
-            position: absolute;
-            top: 8px;
-            right: 10px;
-            background: none;
-            border: 1px solid #ff3333;
-            color: #ff3333;
-            padding: 3px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            display: none;
-        }
+.shopCategory h3 {
+  color: #4CAF50;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #ffcc80;
+  padding-bottom: 5px;
+}
 
-        .btn-apagar:hover {
-            background: #ff3333;
-            color: #fff;
-        }
+.shopItems {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+}
 
-        #form-comentario {
-            display: flex;
-            gap: 10px;
-        }
+.shopItem {
+  background-color: #fff8e1;
+  border-radius: 15px;
+  padding: 15px;
+  text-align: center;
+  border: 2px solid #ffcc80;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
 
-        #input-comentario {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid #00ff00;
-            color: #fff;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1rem;
-            outline: none;
-        }
+.shopItem:hover {
+  transform: translateY(-5px);
+  border-color: #ff6f61;
+}
 
-        #btn-enviar {
-            background: #00ff00;
-            color: #000;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+.shopItem .emoji {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
 
-        #status-conexao {
-            font-size: 0.7rem;
-            text-align: center;
-            color: #ffaa00;
-        }
+.shopItem .price {
+  color: #4CAF50;
+  font-weight: bold;
+  font-size: 16px;
+}
 
-        /* --- INDICADOR DE VOLUME NO JOGO --- */
-        #indicador-volume {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #fff;
-            font-size: 3rem;
-            font-weight: bold;
-            z-index: 25;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-            text-shadow: 0 0 20px #00ff00;
-            background: rgba(0,0,0,0.7);
-            padding: 15px 30px;
-            border-radius: 15px;
-            border: 2px solid #00ff00;
-        }
+.shopItem .name {
+  font-size: 14px;
+  color: #666;
+  margin-top: 5px;
+}
 
-        /* --- CONTROLE DE VOLUME --- */
-        #controle-volume {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            z-index: 20;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 15px;
-            border-radius: 25px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
+.shopItem.purchased {
+  background-color: #e8f5e9;
+  border-color: #4CAF50;
+}
 
-        #icone-volume {
-            color: #fff;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
+.shopItem.purchased .price {
+  color: #666;
+  text-decoration: line-through;
+}
 
-        #slider-volume {
-            -webkit-appearance: none;
-            width: 100px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        #slider-volume::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            background: #fff;
-            border-radius: 50%;
-            cursor: pointer;
-        }
+.shopItem.purchased::after {
+  content: "✓ COMPRADO";
+  display: block;
+  color: #4CAF50;
+  font-size: 12px;
+  font-weight: bold;
+  margin-top: 5px;
+}
 
-        #btn-espectador {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 20;
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            padding: 12px 24px;
-            font-size: 1.2rem;
-            border-radius: 25px;
-            cursor: pointer;
-            display: none;
-            font-weight: bold;
-        }
-        #btn-espectador.ativo {
-            background: rgba(0, 200, 255, 0.5);
-            border-color: #00ccff;
-            box-shadow: 0 0 20px rgba(0, 200, 255, 0.5);
-        }
+/* Caixa de upgrade */
+#upgradeBox {
+  width: 150px;
+  height: 150px;
+  background-color: #ffcc80;
+  border: 5px solid #ff6f61;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 70px;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  margin-bottom: 20px;
+}
 
-        #canvas3d {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-            cursor: default;
-        }
+#closeUpgradeBtn, #closeShopBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: #ff6f61;
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-        #controles {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            display: none;
-            z-index: 5;
-        }
+#upgradeInfo {
+  color: white;
+  text-align: center;
+  font-size: 18px;
+  margin-top: 20px;
+  max-width: 400px;
+}
 
-        #analogico-container {
-            position: absolute;
-            bottom: 50px;
-            left: 50px;
-            width: 120px;
-            height: 120px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            border-radius: 50%;
-            pointer-events: auto;
-        }
-        #analogico-pino {
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 50%;
-            position: absolute;
-        }
-        #touch-camera {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 75%;
-            height: 100%;
-            pointer-events: auto;
-        }
+.shake {
+  animation: shake 0.5s infinite;
+}
 
-        #faixa-dialogo {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            color: #fff;
-            font-size: clamp(1.2rem, 2.5vw, 1.8rem);
-            text-align: center;
-            padding: 20px;
-            border-bottom: 3px solid #00ff00;
-            z-index: 8;
-            display: none;
-        }
+@keyframes shake {
+  0% { transform: translate(0,0) rotate(0deg); }
+  25% { transform: translate(5px,0) rotate(5deg); }
+  50% { transform: translate(-5px,0) rotate(-5deg); }
+  75% { transform: translate(3px,0) rotate(3deg); }
+  100% { transform: translate(0,0) rotate(0deg); }
+}
 
-        #transicao {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            pointer-events: none;
-            z-index: 9;
-            transition: background-color 0.5s ease;
-        }
+/* Animação para emoji voador */
+@keyframes flyToCollection {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.1) translate(var(--target-x), var(--target-y));
+    opacity: 0;
+  }
+}
 
-        #contador-blocos {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #00ff00;
-            font-size: 1.5rem;
-            font-weight: bold;
-            z-index: 7;
-            display: none;
-            text-shadow: 2px 2px #000;
-        }
+.flyingEmoji {
+  position: fixed;
+  font-size: 40px;
+  z-index: 10000;
+  pointer-events: none;
+  animation: flyToCollection 1s forwards;
+}
 
-        #info-teclado {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9rem;
-            z-index: 6;
-            display: none;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 8px 12px;
-            border-radius: 5px;
-        }
+/* Notificações */
+.notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #4CAF50;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  z-index: 10000;
+  animation: slideDown 0.3s ease-out;
+}
 
-        @media (max-width: 768px) {
-            #menu { flex-direction: column; padding: 20px; }
-            #menu-esquerda { height: auto; align-items: center; gap: 15px; }
-            #menu-direita { width: 100%; height: 40%; font-size: 0.9rem; padding: 15px; }
-            #analogico-container { width: 100px; height: 100px; bottom: 30px; left: 30px; }
-            #info-teclado { display: none !important; }
-            #btn-espectador { top: 15px; right: 15px; padding: 8px 16px; font-size: 0.9rem; }
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+@keyframes slideDown {
+  from {
+    top: -100px;
+    opacity: 0;
+  }
+  to {
+    top: 20px;
+    opacity: 1;
+  }
+}
+
+/* Barra de progresso */
+.progressBar {
+  width: 100%;
+  height: 20px;
+  background-color: #ddd;
+  border-radius: 10px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: #4CAF50;
+  border-radius: 10px;
+  transition: width 0.3s;
+}
+</style>
 </head>
 <body>
 
-<div id="menu">
-    <div id="menu-esquerda">
-        <h1 id="titulo">Gewkrooms</h1>
-        <button id="btn-jogar">JOGAR</button>
-        <button id="btn-comentarios">💬 COMENTÁRIOS</button>
+<div id="gameScreen">
+  <div id="scoreboard">Clique: 0</div>
+  <div id="money">Dinheiro: $1000</div>
+  
+  <div id="gameControls">
+    <button class="controlBtn" id="openShopBtn">🛒 Loja</button>
+    <button class="controlBtn" id="openUpgradeBtn">🎁 Caixa Surpresa - $500</button>
+  </div>
+  
+  <div id="collection">
+    <strong>Coleção de Emojis: <span id="collectionCount">0</span></strong>
+    <div id="collectedEmojis"></div>
+  </div>
+</div>
+
+<!-- Overlay de upgrade -->
+<div id="upgradeOverlay">
+  <button id="closeUpgradeBtn" onclick="closeUpgradeBox()">×</button>
+  <div id="upgradeBox" onclick="openCrate()">
+    📦
+  </div>
+  <div id="upgradeInfo">
+    <p>Clique na caixa para abrir e ganhar um emoji especial!</p>
+    <p>Valor sorteado: $1.000 ~ $10.000</p>
+  </div>
+</div>
+
+<!-- Overlay da loja -->
+<div id="shopOverlay">
+  <button id="closeShopBtn" onclick="closeShop()">×</button>
+  <div id="shopContent">
+    <h2>🛒 Loja de Emojis</h2>
+    
+    <div class="shopCategory">
+      <h3>💰 Emojis Básicos (Baratos)</h3>
+      <div class="shopItems" id="basicEmojis">
+        <!-- Emojis básicos serão gerados aqui -->
+      </div>
     </div>
-    <div id="menu-direita">
-        <strong style="color: #00ff00; font-size: 1.3em;">Gewkrooms: A História Oficial</strong><br><br>
-        <strong style="color: #ff8888;">PROJETO SEGUNDA REALIDADE</strong><br>
-        Responsável: G.G.S. (Governo com Grupo Secreto)<br>
-        Status: FALHA CRÍTICA<br><br>
-        A G.G.S. iniciou um experimento ultrassecreto com um objetivo ambicioso: criar a Gewkrooms, uma realidade artificial perfeita. Diante de um mundo real poluído e desgastado, esse novo lugar deveria ser a nova forma de viver da humanidade. O plano era perfeito: um campo esverdeado infinito, um sol suave de manhã e um céu laranja acolhedor.<br><br>
-        <strong style="color: #ff8888;">Mas algo deu muito errado.</strong><br><br>
-        A realidade artificial se tornou completamente instável. O que deveria ser um porto seguro virou uma fachada frágil, um labirinto infinito e vazio. Agora, quem entra nesse simulador consegue dar apenas três passos antes que o próprio cenário quebre. O chão invisível falha, fazendo o indivíduo cair através do "bug" do sistema, direto no vazio de uma ponte instável de 101 blocos e um céu azul sem fim.<br><br>
-        <strong style="color: #ff8888;">O experimento foi abandonado, mas o sistema continua rodando... E você acabou de cair nele.</strong>
+    
+    <div class="shopCategory">
+      <h3>🏆 Emojis Raros (Caros)</h3>
+      <div class="shopItems" id="rareEmojis">
+        <!-- Emojis raros serão gerados aqui -->
+      </div>
     </div>
-</div>
-
-<div id="secao-comentarios">
-    <button id="fechar-comentarios">✕</button>
-    <h2 id="titulo-comentarios">💬 Comentários Globais</h2>
-    <div id="lista-comentarios"><div style="text-align:center;padding:20px;">🔄 Carregando comentários da nuvem...</div></div>
-    <div id="form-comentario">
-        <input type="text" id="input-comentario" placeholder="Digite seu comentário (palavrões serão filtrados)..." maxlength="500">
-        <button id="btn-enviar">Enviar</button>
+    
+    <div class="shopCategory">
+      <h3>💎 Emojis Épicos (Muito Caros)</h3>
+      <div class="shopItems" id="epicEmojis">
+        <!-- Emojis épicos serão gerados aqui -->
+      </div>
     </div>
-    <div id="status-conexao">🌐 Comentários compartilhados com TODOS os jogadores!</div>
+    
+    <div class="shopCategory">
+      <h3>👑 Emojis Lendários (Super Caros)</h3>
+      <div class="shopItems" id="legendaryEmojis">
+        <!-- Emojis lendários serão gerados aqui -->
+      </div>
+    </div>
+    
+    <div class="progressBar">
+      <div class="progressFill" id="shopProgress" style="width: 0%"></div>
+    </div>
+    <div style="text-align: center; color: #666; margin-top: 10px;">
+      Coleção: <span id="ownedCount">0</span> / <span id="totalEmojis">0</span> emojis
+    </div>
+  </div>
 </div>
-
-<div id="indicador-volume">🔊 VOLUME: 40%</div>
-
-<button id="btn-espectador">👁 MODO ESPECTADOR</button>
-
-<div id="controle-volume">
-    <span id="icone-volume">🔊</span>
-    <input type="range" id="slider-volume" min="0" max="100" value="40">
-</div>
-
-<div id="transicao"></div>
-<div id="contador-blocos">Progresso: 0 / 101</div>
-<div id="faixa-dialogo"></div>
-<div id="info-teclado">WASD - Andar | Mouse - Olhar | Espaço - Pular | T/P - Volume | ESC - Soltar mouse</div>
-
-<div id="controles">
-    <div id="touch-camera"></div>
-    <div id="analogico-container"><div id="analogico-pino"></div></div>
-</div>
-
-<canvas id="canvas3d"></canvas>
 
 <script>
-    // ============ SISTEMA DE COMENTÁRIOS GLOBAIS ============
-    const JSONBIN_BIN_ID = "676a1a8aad19ca34f8694854";
-    const JSONBIN_API_KEY = "$2a$10$zZvUxZxZxZxZxZxZxZxZe";
+// VARIÁVEIS DO JOGO
+let score = 0;
+let money = 1000;
+const UPGRADE_COST = 500;
+let maxEmojisOnScreen = 5;
+let isUpgradeBoxOpen = false;
+let ownedEmojis = new Map(); // Mapa: emoji -> quantidade
+let allShopEmojis = [];
+
+// EMOJIS POR CATEGORIA (MUITO MAIS EMOJIS!)
+const emojiCategories = {
+  basic: [
+    { emoji: "😀", name: "Sorriso", price: 50 },
+    { emoji: "😂", name: "Risada", price: 75 },
+    { emoji: "🥰", name: "Carinha de amor", price: 100 },
+    { emoji: "😎", name: "Cool", price: 125 },
+    { emoji: "🤔", name: "Pensativo", price: 150 },
+    { emoji: "🥺", name: "Suplicante", price: 175 },
+    { emoji: "🤯", name: "Explodindo", price: 200 },
+    { emoji: "🤩", name: "Estrelado", price: 225 },
+    { emoji: "🥳", name: "Festa", price: 250 },
+    { emoji: "😴", name: "Dormindo", price: 275 },
+    { emoji: "🤢", name: "Náusea", price: 300 },
+    { emoji: "🤠", name: "Cowboy", price: 325 },
+    { emoji: "🥶", name: "Frio", price: 350 },
+    { emoji: "🤡", name: "Palhaço", price: 375 },
+    { emoji: "👻", name: "Fantasminha", price: 400 }
+  ],
+  
+  rare: [
+    { emoji: "🐶", name: "Cachorro", price: 500 },
+    { emoji: "🐱", name: "Gato", price: 600 },
+    { emoji: "🐭", name: "Rato", price: 700 },
+    { emoji: "🐹", name: "Hamster", price: 800 },
+    { emoji: "🐰", name: "Coelho", price: 900 },
+    { emoji: "🦊", name: "Raposa", price: 1000 },
+    { emoji: "🐻", name: "Urso", price: 1100 },
+    { emoji: "🐼", name: "Panda", price: 1200 },
+    { emoji: "🐨", name: "Coala", price: 1300 },
+    { emoji: "🐯", name: "Tigre", price: 1400 },
+    { emoji: "🦁", name: "Leão", price: 1500 },
+    { emoji: "🐮", name: "Vaca", price: 1600 },
+    { emoji: "🐷", name: "Porco", price: 1700 },
+    { emoji: "🐸", name: "Sapo", price: 1800 },
+    { emoji: "🐵", name: "Macaco", price: 1900 }
+  ],
+  
+  epic: [
+    { emoji: "🦄", name: "Unicórnio", price: 2000 },
+    { emoji: "🐲", name: "Dragão", price: 2500 },
+    { emoji: "🐙", name: "Polvo", price: 3000 },
+    { emoji: "🦑", name: "Lula", price: 3500 },
+    { emoji: "🦐", name: "Camarão", price: 4000 },
+    { emoji: "🦀", name: "Caranguejo", price: 4500 },
+    { emoji: "🐡", name: "Baiacu", price: 5000 },
+    { emoji: "🐬", name: "Golfinho", price: 5500 },
+    { emoji: "🦈", name: "Tubarão", price: 6000 },
+    { emoji: "🐋", name: "Baleia", price: 6500 },
+    { emoji: "🦒", name: "Girafa", price: 7000 },
+    { emoji: "🐘", name: "Elefante", price: 7500 },
+    { emoji: "🦏", name: "Rinoceronte", price: 8000 },
+    { emoji: "🦛", name: "Hipopótamo", price: 8500 },
+    { emoji: "🐪", name: "Camelo", price: 9000 }
+  ],
+  
+  legendary: [
+    { emoji: "🦅", name: "Águia", price: 10000 },
+    { emoji: "🦉", name: "Coruja", price: 15000 },
+    { emoji: "🦚", name: "Pavão", price: 20000 },
+    { emoji: "🦢", name: "Cisne", price: 25000 },
+    { emoji: "🦩", name: "Flamingo", price: 30000 },
+    { emoji: "🐿️", name: "Esquilo", price: 35000 },
+    { emoji: "🦔", name: "Ouriço", price: 40000 },
+    { emoji: "🦇", name: "Morcego", price: 45000 },
+    { emoji: "🐉", name: "Serpente", price: 50000 },
+    { emoji: "🦕", name: "Dinossauro", price: 75000 },
+    { emoji: "🦖", name: "T-Rex", price: 100000 },
+    { emoji: "🦜", name: "Papagaio", price: 150000 },
+    { emoji: "🦤", name: "Dodô", price: 200000 },
+    { emoji: "🦭", name: "Foca", price: 250000 },
+    { emoji: "🦫", name: "Castor", price: 300000 }
+  ]
+};
+
+// Emojis que podem aparecer no jogo (iniciais + comprados)
+let availableEmojis = ["🍎", "🍌", "🍇", "🍉", "🥑", "🥕", "🥦", "🍕", "🍔", "🍟"];
+
+// ATUALIZAR BOTÃO DE UPGRADE
+function updateUpgradeButton() {
+  const btn = document.getElementById('openUpgradeBtn');
+  if (money < UPGRADE_COST) {
+    btn.disabled = true;
+    btn.textContent = `🎁 $${UPGRADE_COST} (Falta: $${UPGRADE_COST - money})`;
+  } else {
+    btn.disabled = false;
+    btn.textContent = `🎁 Caixa Surpresa - $${UPGRADE_COST}`;
+  }
+}
+
+// MOSTRAR NOTIFICAÇÃO
+function showNotification(message, color = '#4CAF50') {
+  const notification = document.createElement('div');
+  notification.className = 'notification';
+  notification.textContent = message;
+  notification.style.backgroundColor = color;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transition = 'opacity 0.5s';
+    setTimeout(() => notification.remove(), 500);
+  }, 3000);
+}
+
+// POSIÇÃO ALEATÓRIA
+function randomPosition(size = 70) {
+  const margin = 100;
+  const x = Math.random() * (window.innerWidth - size - margin * 2) + margin;
+  const y = Math.random() * (window.innerHeight - size - margin * 2) + margin;
+  return { x, y };
+}
+
+// INICIAR JOGO
+function startGame() {
+  spawnEmojis();
+  setInterval(spawnEmojis, 2000);
+  updateUpgradeButton();
+  initializeShop();
+}
+
+// GERAR EMOJIS NA TELA
+function spawnEmojis() {
+  const current = document.querySelectorAll('.emojiBox:not(.collected)').length;
+  if (current >= maxEmojisOnScreen) return;
+  
+  const emoji = availableEmojis[Math.floor(Math.random() * availableEmojis.length)];
+  const box = document.createElement('div');
+  box.className = 'emojiBox';
+  box.textContent = emoji;
+  
+  const pos = randomPosition();
+  box.style.left = pos.x + 'px';
+  box.style.top = pos.y + 'px';
+  
+  box.onclick = () => {
+    score++;
+    const moneyValue = Math.floor(Math.random() * 100 + 1);
+    money += moneyValue;
     
-    let comentariosGlobais = [];
-    let usuarioId = localStorage.getItem('gewkrooms_userId');
-    let usuarioNome = localStorage.getItem('gewkrooms_userName');
+    document.getElementById('scoreboard').textContent = 'Clique: ' + score;
+    updateMoney();
     
-    if (!usuarioId) {
-        usuarioId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-        localStorage.setItem('gewkrooms_userId', usuarioId);
-    }
-    if (!usuarioNome) {
-        const adjetivos = ['Viajante', 'Explorador', 'Aventureiro', 'Corajoso', 'Misterioso', 'Silencioso', 'Rápido', 'Lendário', 'Perdido', 'Sonhador'];
-        const nomes = ['Guerreiro', 'Andarilho', 'Explorador', 'Caminhante', 'Vagante', 'Sábio', 'Herói', 'Solitário'];
-        usuarioNome = adjetivos[Math.floor(Math.random() * adjetivos.length)] + '_' + nomes[Math.floor(Math.random() * nomes.length)];
-        localStorage.setItem('gewkrooms_userName', usuarioNome);
-    }
+    // Animação de clique
+    box.style.transform = 'scale(1.3) rotate(20deg)';
+    box.style.opacity = '0.7';
     
-    const palavrasProibidas = ["buceta", "caralho", "desgraça", "foda", "foder", "fodido", "fudido", "merda", "porra", "puta", "putaria", "cu", "cú", "cuzão", "cuzona", "viado", "bixa", "bicha", "pau", "rola", "piroca", "pinto", "bosta", "idiota", "imbecil", "escroto", "otário", "palhaço", "babaca", "fdp", "filho da puta", "pqp", "tnc", "vtnc", "vai tomar no cu", "caralhuda"];
+    showNotification(`+$${moneyValue} 💰`, '#4CAF50');
     
-    function filtrarPalavroes(texto) {
-        let resultado = texto;
-        let substitutos = ["bodega", "caramba", "bodega", "caramba"];
-        let i = 0;
-        for (let palavra of palavrasProibidas) {
-            const regex = new RegExp(palavra, 'gi');
-            resultado = resultado.replace(regex, substitutos[i % substitutos.length]);
-            i++;
-        }
-        return resultado;
-    }
+    setTimeout(() => {
+      box.remove();
+    }, 200);
+  };
+  
+  document.getElementById('gameScreen').appendChild(box);
+}
+
+// ATUALIZAR DINHEIRO NA TELA
+function updateMoney() {
+  document.getElementById('money').textContent = `Dinheiro: $${money}`;
+  updateUpgradeButton();
+  updateShopButtons();
+}
+
+// ADICIONAR À COLEÇÃO
+function addToCollection(emoji, quantity = 1) {
+  if (!ownedEmojis.has(emoji)) {
+    ownedEmojis.set(emoji, 0);
+  }
+  ownedEmojis.set(emoji, ownedEmojis.get(emoji) + quantity);
+  
+  // Adiciona aos emojis disponíveis para spawn
+  if (!availableEmojis.includes(emoji)) {
+    availableEmojis.push(emoji);
+  }
+  
+  updateCollectionDisplay();
+}
+
+// ATUALIZAR DISPLAY DA COLEÇÃO
+function updateCollectionDisplay() {
+  const collectionDiv = document.getElementById('collectedEmojis');
+  collectionDiv.innerHTML = '';
+  
+  let total = 0;
+  ownedEmojis.forEach((quantity, emoji) => {
+    const colEmoji = document.createElement('div');
+    colEmoji.className = 'collectedEmoji';
+    colEmoji.textContent = emoji;
+    colEmoji.title = `Quantidade: ${quantity}`;
     
-    async function carregarComentarios() {
-        try {
-            const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-                headers: { 'X-Master-Key': JSONBIN_API_KEY }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                comentariosGlobais = data.record?.comentarios || [];
-            } else {
-                comentariosGlobais = JSON.parse(localStorage.getItem('gewkrooms_comentarios_fallback') || '[]');
-            }
-        } catch(e) {
-            comentariosGlobais = JSON.parse(localStorage.getItem('gewkrooms_comentarios_fallback') || '[]');
-        }
-        renderizarComentarios();
-    }
+    const countSpan = document.createElement('span');
+    countSpan.className = 'emojiCount';
+    countSpan.textContent = quantity > 9 ? '9+' : quantity;
+    colEmoji.appendChild(countSpan);
     
-    async function salvarComentarios() {
-        try {
-            await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-                body: JSON.stringify({ comentarios: comentariosGlobais })
-            });
-            localStorage.setItem('gewkrooms_comentarios_fallback', JSON.stringify(comentariosGlobais));
-        } catch(e) {
-            localStorage.setItem('gewkrooms_comentarios_fallback', JSON.stringify(comentariosGlobais));
-        }
-    }
+    collectionDiv.appendChild(colEmoji);
+    total += quantity;
+  });
+  
+  document.getElementById('collectionCount').textContent = ownedEmojis.size;
+  updateShopProgress();
+}
+
+// INICIALIZAR LOJA
+function initializeShop() {
+  // Juntar todos os emojis da loja
+  allShopEmojis = [];
+  for (const category in emojiCategories) {
+    allShopEmojis.push(...emojiCategories[category]);
+  }
+  
+  // Gerar a loja
+  generateShopCategory('basicEmojis', emojiCategories.basic);
+  generateShopCategory('rareEmojis', emojiCategories.rare);
+  generateShopCategory('epicEmojis', emojiCategories.epic);
+  generateShopCategory('legendaryEmojis', emojiCategories.legendary);
+  
+  updateShopProgress();
+  
+  // Adicionar emojis iniciais à coleção
+  availableEmojis.forEach(emoji => addToCollection(emoji, 1));
+}
+
+// GERAR CATEGORIA DA LOJA
+function generateShopCategory(elementId, items) {
+  const container = document.getElementById(elementId);
+  container.innerHTML = '';
+  
+  items.forEach(item => {
+    const shopItem = document.createElement('div');
+    shopItem.className = 'shopItem';
+    shopItem.dataset.emoji = item.emoji;
+    shopItem.dataset.price = item.price;
     
-    function adicionarComentario(texto) {
-        const textoFiltrado = filtrarPalavroes(texto.trim());
-        const novoComentario = {
-            id: Date.now().toString(),
-            autorId: usuarioId,
-            autorNome: usuarioNome,
-            texto: textoFiltrado,
-            data: new Date().toLocaleString('pt-BR')
-        };
-        comentariosGlobais.unshift(novoComentario);
-        if (comentariosGlobais.length > 200) comentariosGlobais = comentariosGlobais.slice(0, 200);
-        salvarComentarios();
-        renderizarComentarios();
-        if (textoFiltrado !== texto) alert("⚠️ Palavrão detectado! Foi substituído por 'bodega' ou 'caramba'.");
-    }
-    
-    function apagarComentario(id) {
-        const comentario = comentariosGlobais.find(c => c.id === id);
-        if (comentario && comentario.autorId === usuarioId) {
-            comentariosGlobais = comentariosGlobais.filter(c => c.id !== id);
-            salvarComentarios();
-            renderizarComentarios();
-            alert("✅ Seu comentário foi apagado!");
-        } else if (comentario) {
-            alert("❌ Você só pode apagar seus próprios comentários!");
-        }
-    }
-    
-    function renderizarComentarios() {
-        const container = document.getElementById('lista-comentarios');
-        if (comentariosGlobais.length === 0) {
-            container.innerHTML = '<p style="color:#888;text-align:center;">✨ Nenhum comentário ainda. Seja o primeiro!</p>';
-            return;
-        }
-        container.innerHTML = '';
-        comentariosGlobais.forEach(c => {
-            const div = document.createElement('div');
-            div.className = 'comentario-item';
-            const podeApagar = c.autorId === usuarioId;
-            div.innerHTML = `<div class="comentario-autor">👤 ${escapeHTML(c.autorNome)}</div>
-                            <div class="comentario-texto">💬 ${escapeHTML(c.texto)}</div>
-                            <div class="comentario-data">📅 ${c.data}</div>
-                            ${podeApagar ? `<button class="btn-apagar" data-id="${c.id}" style="display:block;">🗑️ Apagar</button>` : ''}`;
-            container.appendChild(div);
-        });
-        document.querySelectorAll('.btn-apagar').forEach(btn => {
-            btn.addEventListener('click', (e) => { e.stopPropagation(); apagarComentario(btn.dataset.id); });
-        });
-    }
-    
-    function escapeHTML(str) { return str.replace(/[&<>]/g, function(m) { return m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'; }); }
-    
-    // ============ JOGO 3D COMPLETO ============
-    let cena, camera, renderizador, estado = "menu";
-    let jogador = { x: 0, z: 0, y: 1.6, velY: 0, noChao: true, passos: 0, rotX: 0, rotY: 0 };
-    let maiorFileiraAlcancada = 0, dialogoAtivo = false, controlesBloqueados = false, modoEspectador = false;
-    let teclas = { w: false, a: false, s: false, d: false, shift: false, espaco: false };
-    let mouseBloqueado = false, sensibilidadeMouse = 0.002;
-    let joystick = { ativo: false, startX: 0, startY: 0, moveX: 0, moveY: 0 };
-    let touchCam = { ativo: false, lastX: 0, lastY: 0 };
-    let grupoMundoAtivo, blocosGewkrooms = [], meshFlor = null;
-    const tamanhoBloco = 4.5, velocidadeNormal = 20.0, velocidadeEspectador = 30.0;
-    
-    const btnJogar = document.getElementById('btn-jogar');
-    const btnComentarios2 = document.getElementById('btn-comentarios');
-    const menuDiv = document.getElementById('menu');
-    const controlesDiv = document.getElementById('controles');
-    const canvas = document.getElementById('canvas3d');
-    const transicao = document.getElementById('transicao');
-    const pino = document.getElementById('analogico-pino');
-    const touchCamElement = document.getElementById('touch-camera');
-    const faixaDialogo = document.getElementById('faixa-dialogo');
-    const painelContador = document.getElementById('contador-blocos');
-    const infoTeclado = document.getElementById('info-teclado');
-    const btnEspectador = document.getElementById('btn-espectador');
-    const sliderVolume = document.getElementById('slider-volume');
-    const iconeVolume = document.getElementById('icone-volume');
-    const indicadorVolume = document.getElementById('indicador-volume');
-    
-    const secaoComentariosDiv = document.getElementById('secao-comentarios');
-    const fecharComentariosBtn = document.getElementById('fechar-comentarios');
-    const inputComentario = document.getElementById('input-comentario');
-    const btnEnviar = document.getElementById('btn-enviar');
-    
-    btnComentarios2.addEventListener('click', () => { secaoComentariosDiv.classList.add('ativo'); carregarComentarios(); });
-    fecharComentariosBtn.addEventListener('click', () => { secaoComentariosDiv.classList.remove('ativo'); });
-    btnEnviar.addEventListener('click', () => { const txt = inputComentario.value.trim(); if(txt) { adicionarComentario(txt); inputComentario.value = ''; } });
-    inputComentario.addEventListener('keypress', (e) => { if(e.key === 'Enter') { const txt = inputComentario.value.trim(); if(txt) { adicionarComentario(txt); inputComentario.value = ''; } } });
-    
-    // Áudio
-    let audioContext, ganhoPrincipal, osciladoresAtivos = [], volumeAtual = 0.4;
-    
-    function mostrarIndicadorVolume() {
-        const emoji = volumeAtual === 0 ? '🔇' : volumeAtual < 0.3 ? '🔈' : volumeAtual < 0.7 ? '🔉' : '🔊';
-        indicadorVolume.textContent = `${emoji} VOLUME: ${Math.round(volumeAtual * 100)}%`;
-        indicadorVolume.style.opacity = '1';
-        clearTimeout(indicadorVolume._timeout);
-        indicadorVolume._timeout = setTimeout(() => { indicadorVolume.style.opacity = '0'; }, 1500);
-    }
-    
-    function atualizarVolume(delta) {
-        volumeAtual = Math.max(0, Math.min(1, volumeAtual + delta));
-        if(ganhoPrincipal) ganhoPrincipal.gain.value = volumeAtual;
-        sliderVolume.value = Math.round(volumeAtual * 100);
-        const emoji = volumeAtual === 0 ? '🔇' : volumeAtual < 0.3 ? '🔈' : volumeAtual < 0.7 ? '🔉' : '🔊';
-        iconeVolume.textContent = emoji;
-        mostrarIndicadorVolume();
-    }
-    
-    function iniciarAudio() {
-        if(!audioContext || audioContext.state === 'closed') {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            ganhoPrincipal = audioContext.createGain();
-            ganhoPrincipal.gain.value = volumeAtual;
-            ganhoPrincipal.connect(audioContext.destination);
-            
-            const osc1 = audioContext.createOscillator(); osc1.type = 'sine'; osc1.frequency.value = 60;
-            const g1 = audioContext.createGain(); g1.gain.value = 0.5; osc1.connect(g1); g1.connect(ganhoPrincipal);
-            osc1.start(); osciladoresAtivos.push(osc1);
-            
-            const osc2 = audioContext.createOscillator(); osc2.type = 'sine'; osc2.frequency.value = 240;
-            const g2 = audioContext.createGain(); g2.gain.value = 0.3; osc2.connect(g2); g2.connect(ganhoPrincipal);
-            osc2.start(); osciladoresAtivos.push(osc2);
-            
-            const osc3 = audioContext.createOscillator(); osc3.type = 'triangle'; osc3.frequency.value = 720;
-            const g3 = audioContext.createGain(); g3.gain.value = 0.1; osc3.connect(g3); g3.connect(ganhoPrincipal);
-            osc3.start(); osciladoresAtivos.push(osc3);
-        } else if(audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
-    }
-    
-    function pararAudio() {
-        if(audioContext && audioContext.state !== 'closed') {
-            osciladoresAtivos.forEach(osc => {
-                try { osc.stop(); } catch(e) {}
-            });
-            osciladoresAtivos = [];
-            audioContext.close().then(() => {
-                audioContext = null;
-                ganhoPrincipal = null;
-            });
-        }
-    }
-    
-    sliderVolume.addEventListener('input', (e) => { 
-        volumeAtual = e.target.value/100; 
-        if(ganhoPrincipal) ganhoPrincipal.gain.value = volumeAtual; 
-        const emoji = volumeAtual===0?'🔇':volumeAtual<0.3?'🔈':volumeAtual<0.7?'🔉':'🔊';
-        iconeVolume.textContent = emoji; 
-    });
-    
-    function init3D() {
-        cena = new THREE.Scene();
-        grupoMundoAtivo = new THREE.Group();
-        cena.add(grupoMundoAtivo);
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        renderizador = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-        renderizador.setSize(window.innerWidth, window.innerHeight);
-        const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.7);
-        cena.add(luzAmbiente);
-        window.addEventListener('resize', () => { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderizador.setSize(window.innerWidth, window.innerHeight); });
-    }
-    
-    function montarFaseCampo() {
-        while(grupoMundoAtivo.children.length) grupoMundoAtivo.remove(grupoMundoAtivo.children[0]);
-        blocosGewkrooms = [];
-        cena.background = new THREE.Color(0xff6600);
-        const solGeo = new THREE.SphereGeometry(5,32,32);
-        const sol = new THREE.Mesh(solGeo, new THREE.MeshBasicMaterial({color:0xffff00}));
-        sol.position.set(10,40,-50);
-        grupoMundoAtivo.add(sol);
-        const luzSol = new THREE.DirectionalLight(0xffffaa,0.8);
-        luzSol.position.set(10,40,-50);
-        grupoMundoAtivo.add(luzSol);
-        const chaoCanvas = document.createElement('canvas');
-        chaoCanvas.width=256; chaoCanvas.height=256;
-        const ctx = chaoCanvas.getContext('2d');
-        ctx.fillStyle='#008800'; ctx.fillRect(0,0,256,256);
-        ctx.strokeStyle='#00ff00'; ctx.lineWidth=4;
-        for(let i=0;i<=256;i+=32){ ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,256); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(256,i); ctx.stroke(); }
-        const texturaGrama = new THREE.CanvasTexture(chaoCanvas);
-        texturaGrama.wrapS = THREE.RepeatWrapping; texturaGrama.wrapT = THREE.RepeatWrapping;
-        texturaGrama.repeat.set(100,100);
-        const chaoGrama = new THREE.Mesh(new THREE.PlaneGeometry(1000,1000), new THREE.MeshBasicMaterial({map:texturaGrama,side:THREE.DoubleSide}));
-        chaoGrama.rotation.x = -Math.PI/2;
-        grupoMundoAtivo.add(chaoGrama);
+    const isOwned = ownedEmojis.has(item.emoji);
+    if (isOwned) {
+      shopItem.classList.add('purchased');
     }
     
-    function dispararTransitionQueda() {
-        estado = "caindo";
-        controlesBloqueados = true;
-        transicao.style.backgroundColor = "rgba(0,0,0,1)";
-        setTimeout(() => {
-            while(grupoMundoAtivo.children.length) grupoMundoAtivo.remove(grupoMundoAtivo.children[0]);
-            cena.background = new THREE.Color(0x87CEEB);
-            painelContador.style.display = "block";
-            painelContador.innerText = "Progresso: 0 / 101";
-            btnEspectador.style.display = 'block';
-            const blocoGeo = new THREE.BoxGeometry(tamanhoBloco, tamanhoBloco, tamanhoBloco);
-            const blocoMat = new THREE.MeshBasicMaterial({ color: 0x22aa22 });
-            const colunasX = 4, totalFileirasZ = 101, espacamentoX = 5.2, espacamentoZ = 5.2;
-            for(let z=0; z<totalFileirasZ; z++) {
-                let variacaoY = Math.sin(z*0.4)*0.5;
-                for(let x=0; x<colunasX; x++) {
-                    const m = new THREE.Mesh(blocoGeo, blocoMat);
-                    m.position.x = (x-(colunasX-1)/2)*espacamentoX;
-                    m.position.z = -30 - (z*espacamentoZ);
-                    m.position.y = variacaoY;
-                    m.userData = { fileira: z+1 };
-                    grupoMundoAtivo.add(m);
-                    blocosGewkrooms.push(m);
-                    if(z === totalFileirasZ-1 && x===1) {
-                        const grupoFlor = new THREE.Group();
-                        const petala = new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.8,0.05,16), new THREE.MeshBasicMaterial({color:0xff66cc}));
-                        grupoFlor.add(petala);
-                        const miolo = new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3,0.08,16), new THREE.MeshBasicMaterial({color:0xffff00}));
-                        miolo.position.y=0.04;
-                        grupoFlor.add(miolo);
-                        grupoFlor.position.set(m.position.x, m.position.y+tamanhoBloco/2+0.1, m.position.z);
-                        grupoMundoAtivo.add(grupoFlor);
-                        meshFlor = grupoFlor;
-                    }
-                }
-            }
-            jogador.x = (1-(colunasX-1)/2)*espacamentoX;
-            jogador.z = -30;
-            jogador.y = Math.sin(0)*0.5 + tamanhoBloco/2 + 1.6;
-            jogador.velY = 0;
-            jogador.noChao = true;
-            controlesBloqueados = false;
-            transicao.style.backgroundColor = "rgba(0,0,0,0)";
-            estado = "gewkrooms";
-        }, 600);
+    shopItem.innerHTML = `
+      <div class="emoji">${item.emoji}</div>
+      <div class="price">$${item.price}</div>
+      <div class="name">${item.name}</div>
+    `;
+    
+    shopItem.onclick = () => buyEmoji(item);
+    
+    container.appendChild(shopItem);
+  });
+}
+
+// COMPRAR EMOJI
+function buyEmoji(item) {
+  if (ownedEmojis.has(item.emoji)) {
+    showNotification(`Você já tem ${item.emoji} ${item.name}!`, '#FF9800');
+    return;
+  }
+  
+  if (money < item.price) {
+    showNotification(`Dinheiro insuficiente! Faltam $${item.price - money}`, '#f44336');
+    return;
+  }
+  
+  // Debita o dinheiro
+  money -= item.price;
+  updateMoney();
+  
+  // Adiciona à coleção
+  addToCollection(item.emoji);
+  
+  // Atualiza item na loja
+  const shopItem = document.querySelector(`.shopItem[data-emoji="${item.emoji}"]`);
+  if (shopItem) {
+    shopItem.classList.add('purchased');
+  }
+  
+  showNotification(`✅ Comprou ${item.emoji} ${item.name} por $${item.price}!`, '#4CAF50');
+}
+
+// ATUALIZAR PROGRESSO DA LOJA
+function updateShopProgress() {
+  const total = allShopEmojis.length;
+  const owned = ownedEmojis.size;
+  const progress = (owned / total) * 100;
+  
+  document.getElementById('shopProgress').style.width = `${progress}%`;
+  document.getElementById('ownedCount').textContent = owned;
+  document.getElementById('totalEmojis').textContent = total;
+}
+
+// ATUALIZAR BOTÕES DA LOJA
+function updateShopButtons() {
+  document.querySelectorAll('.shopItem').forEach(item => {
+    const price = parseInt(item.dataset.price);
+    const emoji = item.dataset.emoji;
+    
+    if (ownedEmojis.has(emoji)) {
+      item.classList.add('purchased');
+    } else if (money < price) {
+      item.style.opacity = '0.7';
+      item.style.cursor = 'not-allowed';
+    } else {
+      item.style.opacity = '1';
+      item.style.cursor = 'pointer';
     }
+  });
+}
+
+// ABRIR CAIXA DE UPGRADE
+function openUpgradeBox() {
+  if (money < UPGRADE_COST) {
+    showNotification(`Você precisa de $${UPGRADE_COST} para comprar uma caixa!`, '#f44336');
+    return;
+  }
+  
+  // Debita o dinheiro
+  money -= UPGRADE_COST;
+  updateMoney();
+  
+  // Mostra o overlay
+  document.getElementById('upgradeOverlay').style.display = 'flex';
+  isUpgradeBoxOpen = true;
+  
+  // Anima a caixa
+  const upgradeBox = document.getElementById('upgradeBox');
+  upgradeBox.textContent = '📦';
+  upgradeBox.classList.add('shake');
+}
+
+// FECHAR CAIXA DE UPGRADE
+function closeUpgradeBox() {
+  document.getElementById('upgradeOverlay').style.display = 'none';
+  isUpgradeBoxOpen = false;
+  const upgradeBox = document.getElementById('upgradeBox');
+  upgradeBox.classList.remove('shake');
+}
+
+// ABRIR CAIXA SURPRESA
+function openCrate() {
+  if (!isUpgradeBoxOpen) return;
+  
+  const upgradeBox = document.getElementById('upgradeBox');
+  upgradeBox.classList.remove('shake');
+  upgradeBox.style.cursor = 'default';
+  
+  // Escolhe um emoji aleatório (pode ser de qualquer categoria)
+  const allEmojis = [...emojiCategories.basic, ...emojiCategories.rare, 
+                    ...emojiCategories.epic, ...emojiCategories.legendary];
+  const randomItem = allEmojis[Math.floor(Math.random() * allEmojis.length)];
+  
+  // Mostra o emoji
+  upgradeBox.textContent = randomItem.emoji;
+  
+  // Anima o emoji voando
+  const flyingEmoji = document.createElement('div');
+  flyingEmoji.textContent = randomItem.emoji;
+  flyingEmoji.className = 'flyingEmoji';
+  
+  const overlay = document.getElementById('upgradeOverlay');
+  const rect = overlay.getBoundingClientRect();
+  flyingEmoji.style.left = (rect.left + rect.width / 2 - 20) + 'px';
+  flyingEmoji.style.top = (rect.top + rect.height / 2 - 20) + 'px';
+  
+  const collection = document.getElementById('collection').getBoundingClientRect();
+  const targetX = collection.left + collection.width / 2 - (rect.left + rect.width / 2);
+  const targetY = collection.top + collection.height / 2 - (rect.top + rect.height / 2);
+  
+  flyingEmoji.style.setProperty('--target-x', targetX + 'px');
+  flyingEmoji.style.setProperty('--target-y', targetY + 'px');
+  
+  document.body.appendChild(flyingEmoji);
+  
+  // Adiciona à coleção
+  setTimeout(() => {
+    const moneyValue = Math.floor(Math.random() * 9000 + 1000); // $1.000 ~ $10.000
+    addToCollection(randomItem.emoji);
+    money += moneyValue;
+    updateMoney();
     
-    function gerenciarHistoricoTexto() {
-        if(dialogoAtivo) return;
-        dialogoAtivo = true;
-        controlesBloqueados = true;
-        const falas = ["Cara, que flor é essa?", "Eu tô no lugar infinito né, então para que uma flor aqui?", "Quem que colocou isso?", "Mas tá bom né, não tinha nada, mas eu acho que é infinito, mas tá bom só vamos."];
-        let indice = 0;
-        faixaDialogo.style.display = "block";
-        faixaDialogo.innerText = falas[indice];
-        const intervalo = setInterval(() => {
-            indice++;
-            if(indice < falas.length) faixaDialogo.innerText = falas[indice];
-            else { clearInterval(intervalo); faixaDialogo.style.display = "none"; dispararTransicaoRetorno(); }
-        }, 3500);
+    flyingEmoji.remove();
+    closeUpgradeBox();
+    
+    showNotification(`🎉 Você ganhou ${randomItem.emoji} ${randomItem.name} e $${moneyValue}!`, '#FF9800');
+  }, 1000);
+}
+
+// ABRIR LOJA
+function openShop() {
+  document.getElementById('shopOverlay').style.display = 'flex';
+  updateShopButtons();
+}
+
+// FECHAR LOJA
+function closeShop() {
+  document.getElementById('shopOverlay').style.display = 'none';
+}
+
+// CONFIGURAR EVENTOS
+document.getElementById('openShopBtn').onclick = openShop;
+document.getElementById('openUpgradeBtn').onclick = openUpgradeBox;
+
+// Fechar overlay ao clicar fora
+document.getElementById('upgradeOverlay').onclick = function(event) {
+  if (event.target.id === 'upgradeOverlay') {
+    closeUpgradeBox();
+  }
+};
+
+document.getElementById('shopOverlay').onclick = function(event) {
+  if (event.target.id === 'shopOverlay') {
+    closeShop();
+  }
+};
+
+// INICIAR O JOGO
+window.onload = function() {
+  startGame();
+};
+
+// AJUSTAR TELA AO REDIMENSIONAR
+window.onresize = function() {
+  document.querySelectorAll('.emojiBox').forEach(box => {
+    if (!box.classList.contains('collected')) {
+      const pos = randomPosition();
+      box.style.left = pos.x + 'px';
+      box.style.top = pos.y + 'px';
     }
-    
-    function dispararTransicaoRetorno() {
-        transicao.style.backgroundColor = "rgba(0,0,0,1)";
-        setTimeout(() => {
-            pararAudio();
-            canvas.style.display = 'none';
-            controlesDiv.style.display = 'none';
-            infoTeclado.style.display = 'none';
-            btnEspectador.style.display = 'none';
-            menuDiv.style.display = 'flex';
-            btnComentarios2.style.display = 'block';
-            montarFaseCampo();
-            controlesBloqueados = false;
-            dialogoAtivo = false;
-            jogador.x = 0; jogador.z = 0; jogador.y = 1.6;
-            estado = "menu";
-            transicao.style.backgroundColor = "rgba(0,0,0,0)";
-            if(mouseBloqueado) {
-                document.exitPointerLock();
-                mouseBloqueado = false;
-            }
-        }, 800);
-    }
-    
-    function atualizarRotacaoCamera(dX, dY, isMouse = false) {
-        if(controlesBloqueados) return;
-        if(isMouse) {
-            jogador.rotY -= dX * sensibilidadeMouse;
-            jogador.rotX -= dY * sensibilidadeMouse;
-        } else {
-            jogador.rotY -= dX * 0.01;
-            jogador.rotX -= dY * 0.01;
-        }
-        jogador.rotX = Math.max(-Math.PI/2.2, Math.min(Math.PI/2.2, jogador.rotX));
-    }
-    
-    function isInputFocused() { const a = document.activeElement; return a.tagName === 'INPUT' || a.tagName === 'TEXTAREA'; }
-    
-    // Eventos de teclado COM CONTROLE DE VOLUME T e P
-    window.addEventListener('keydown', (e) => {
-        if(isInputFocused()) return;
-        
-        // Controle de volume com T e P (funciona mesmo com mouse travado)
-        if(e.key === 't' || e.key === 'T') {
-            e.preventDefault();
-            atualizarVolume(-0.1);
-            return;
-        }
-        if(e.key === 'p' || e.key === 'P') {
-            e.preventDefault();
-            atualizarVolume(0.1);
-            return;
-        }
-        
-        if(controlesBloqueados && !modoEspectador) return;
-        const k = e.key.toLowerCase();
-        if(k==='w'||k==='a'||k==='s'||k==='d') { e.preventDefault(); teclas[k]=true; }
-        if(k==='shift') teclas.shift=true;
-        if(e.key===' ') { e.preventDefault(); if(modoEspectador && estado==='gewkrooms') teclas.espaco=true; else if(estado==='gewkrooms' && jogador.noChao && !controlesBloqueados) { jogador.velY=0.5; jogador.noChao=false; } }
-        if(e.key==='Escape' && mouseBloqueado) { document.exitPointerLock(); infoTeclado.textContent = 'WASD - Andar | Mouse - Olhar | Espaço - Pular | T/P - Volume | Clique para travar mouse'; }
-    });
-    
-    window.addEventListener('keyup', (e) => { 
-        if(isInputFocused()) return; 
-        const k=e.key.toLowerCase(); 
-        if(k==='w'||k==='a'||k==='s'||k==='d') teclas[k]=false; 
-        if(k==='shift') teclas.shift=false; 
-        if(k===' ') teclas.espaco=false; 
-    });
-    
-    // Touch controls
-    const containerAnalogico = document.getElementById('analogico-container');
-    containerAnalogico.addEventListener('touchstart', (e) => { if(controlesBloqueados && !modoEspectador) return; const t=e.changedTouches[0]; joystick.ativo=true; joystick.startX=t.clientX; joystick.startY=t.clientY; }, {passive:true});
-    touchCamElement.addEventListener('touchstart', (e) => { const t=e.changedTouches[0]; touchCam.ativo=true; touchCam.lastX=t.clientX; touchCam.lastY=t.clientY; }, {passive:true});
-    window.addEventListener('touchmove', (e) => {
-        for(let t of e.touches) {
-            if(joystick.ativo && (!controlesBloqueados || modoEspectador)) {
-                let dx=t.clientX-joystick.startX, dy=t.clientY-joystick.startY;
-                const dist=Math.hypot(dx,dy), maxDist=40;
-                if(dist>maxDist) { dx=(dx/dist)*maxDist; dy=(dy/dist)*maxDist; }
-                pino.style.transform=`translate(${dx}px, ${dy}px)`;
-                joystick.moveX=dx/maxDist; joystick.moveY=-dy/maxDist;
-            }
-            if(touchCam.ativo) {
-                atualizarRotacaoCamera(t.clientX-touchCam.lastX, t.clientY-touchCam.lastY, false);
-                touchCam.lastX=t.clientX; touchCam.lastY=t.clientY;
-            }
-        }
-    }, {passive:true});
-    window.addEventListener('touchend', (e) => { joystick.ativo=false; pino.style.transform='translate(0px,0px)'; joystick.moveX=0; joystick.moveY=0; touchCam.ativo=false; });
-    
-    btnEspectador.addEventListener('click', () => {
-        if(estado!=='gewkrooms') return;
-        modoEspectador=!modoEspectador;
-        btnEspectador.classList.toggle('ativo');
-        btnEspectador.textContent = modoEspectador ? '👁 ESPECTADOR: LIGADO' : '👁 MODO ESPECTADOR';
-        jogador.velY=0; jogador.noChao=false;
-    });
-    
-    btnJogar.addEventListener('click', () => {
-        iniciarAudio();
-        menuDiv.style.display='none';
-        canvas.style.display='block';
-        controlesDiv.style.display='block';
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        if(!isMobile) {
-            infoTeclado.style.display='block';
-            infoTeclado.textContent = 'WASD - Andar | Mouse - Olhar | Espaço - Pular | T/P - Volume | ESC - Soltar mouse';
-        }
-        init3D();
-        montarFaseCampo();
-        estado="campo";
-        modoEspectador=false;
-        btnEspectador.style.display='none';
-        
-        // Mouse já começa travado automaticamente
-        canvas.requestPointerLock();
-        mouseBloqueado = true;
-        canvas.style.cursor = 'none';
-        
-        canvas.addEventListener('click', () => { 
-            if(!mouseBloqueado && !isMobile) {
-                canvas.requestPointerLock();
-            }
-        });
-        
-        document.addEventListener('pointerlockchange', () => {
-            mouseBloqueado = document.pointerLockElement === canvas;
-            if(mouseBloqueado) {
-                canvas.style.cursor = 'none';
-                if(!isMobile) infoTeclado.textContent = 'WASD - Andar | Mouse - Olhar | Espaço - Pular | T/P - Volume | ESC - Soltar mouse';
-            } else {
-                canvas.style.cursor = 'default';
-                if(!isMobile) infoTeclado.textContent = 'WASD - Andar | Mouse - Olhar | Espaço - Pular | T/P - Volume | Clique para travar mouse';
-            }
-        });
-        
-        document.addEventListener('mousemove', (e) => {
-            if(mouseBloqueado && !controlesBloqueados) {
-                atualizarRotacaoCamera(e.movementX || 0, e.movementY || 0, true);
-            }
-        });
-        
-        animar();
-    });
-    
-    function animar() {
-        requestAnimationFrame(animar);
-        let movX=0, movZ=0, movY=0;
-        
-        if(joystick.ativo && (Math.abs(joystick.moveX)>0.05 || Math.abs(joystick.moveY)>0.05)) {
-            movX=joystick.moveX;
-            movZ=joystick.moveY;
-        } else {
-            if(teclas.w) movZ+=1;
-            if(teclas.s) movZ-=1;
-            if(teclas.a) movX-=1;
-            if(teclas.d) movX+=1;
-        }
-        
-        if(modoEspectador) {
-            if(teclas.espaco) movY+=1;
-            if(teclas.shift) movY-=1;
-        }
-        
-        const fwdX=Math.sin(jogador.rotY), fwdZ=Math.cos(jogador.rotY);
-        const sideX=Math.cos(jogador.rotY), sideZ=-Math.sin(jogador.rotY);
-        const vel = modoEspectador ? velocidadeEspectador : velocidadeNormal;
-        let dx = (fwdX*movZ + sideX*movX) * vel * 0.016;
-        let dz = (fwdZ*movZ + sideZ*movX) * vel * 0.016;
-        let dy = movY * vel * 0.016;
-        
-        if(estado==="campo" && !controlesBloqueados) {
-            jogador.x+=dx; jogador.z+=dz;
-            if(Math.abs(dx)>0.001||Math.abs(dz)>0.001) jogador.passos+=0.12;
-            if(jogador.passos>4) dispararTransitionQueda();
-        } else if(estado==="gewkrooms" || estado==="caindo") {
-            if(!controlesBloqueados || modoEspectador) {
-                jogador.x+=dx; jogador.z+=dz;
-                if(modoEspectador) { jogador.y+=dy; jogador.velY=0; jogador.noChao=true; }
-            }
-            if(!modoEspectador) {
-                jogador.velY -= 0.02;
-                jogador.y += jogador.velY;
-            }
-            if(estado==="gewkrooms" && !modoEspectador) {
-                let colidiu=false;
-                const alturaOlhos=1.6, metade=tamanhoBloco/2;
-                for(let bloco of blocosGewkrooms) {
-                    if(Math.abs(jogador.x-bloco.position.x)<=metade && Math.abs(jogador.z-bloco.position.z)<=metade) {
-                        let topo = bloco.position.y+metade;
-                        if(jogador.y-alturaOlhos <= topo+0.2 && jogador.y-alturaOlhos >= topo-0.8 && jogador.velY<=0) {
-                            jogador.y=topo+alturaOlhos;
-                            jogador.velY=0;
-                            jogador.noChao=true;
-                            colidiu=true;
-                            let fAtual=bloco.userData.fileira;
-                            if(fAtual>maiorFileiraAlcancada) {
-                                maiorFileiraAlcancada=fAtual;
-                                painelContador.innerText=`Progresso: ${maiorFileiraAlcancada} / 101`;
-                            }
-                            break;
-                        }
-                    }
-                }
-                if(!colidiu) jogador.noChao=false;
-                if(meshFlor && !controlesBloqueados && Math.hypot(jogador.x-meshFlor.position.x, jogador.z-meshFlor.position.z)<2.0 && Math.abs(jogador.y-1.6-meshFlor.position.y)<2.0) gerenciarHistoricoTexto();
-                if(jogador.y<-30) {
-                    const espX=5.2, espZ=5.2;
-                    jogador.x = (1-(4-1)/2)*espX;
-                    jogador.z = -30 - ((maiorFileiraAlcancada>0?maiorFileiraAlcancada-1:0)*espZ);
-                    jogador.y = Math.sin((maiorFileiraAlcancada>0?maiorFileiraAlcancada-1:0)*0.4)*0.5 + tamanhoBloco/2 + 10;
-                    jogador.velY=0; jogador.noChao=false;
-                }
-            }
-        }
-        
-        // Aplicar rotação da câmera
-        camera.rotation.order = 'YXZ';
-        camera.rotation.x = jogador.rotX;
-        camera.rotation.y = jogador.rotY;
-        camera.position.set(jogador.x, jogador.y, jogador.z);
-        
-        renderizador.render(cena, camera);
-    }
-    
-    // Parar áudio quando a página for fechada ou sair
-    window.addEventListener('beforeunload', () => { pararAudio(); });
-    window.addEventListener('pagehide', () => { pararAudio(); });
-    document.addEventListener('visibilitychange', () => { if(document.hidden) pararAudio(); });
-    
-    console.log(`🎮 Gewkrooms iniciado! Usuário: ${usuarioNome}`);
-    console.log(`⚡ Velocidade EXTREMA: Normal=${velocidadeNormal} | Espectador=${velocidadeEspectador}`);
-    console.log(`🔊 Use T para abaixar volume e P para aumentar!`);
-    console.log(`🖱️ Mouse já começa travado no jogo!`);
+  });
+};
 </script>
+
 </body>
 </html>
